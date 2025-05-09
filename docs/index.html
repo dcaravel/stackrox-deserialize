@@ -1,0 +1,251 @@
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <script src="wasm_exec.js"></script>
+        <style>
+            html, body {
+                height: 100vh;
+                margin: 0;
+                background-color: #d3d3d3;
+                display: flex;
+                flex-direction: column;
+            }
+
+            textarea {
+                width: 100%;
+                height: 80px;
+            }
+
+            #message {
+                align-self: flex-start; 
+                width: 100%;
+                margin: auto;
+                text-align: center;
+                padding-top: 20px;
+                flex-grow: 1;
+            }
+
+            #results {
+                /* display: flex; */
+                flex-grow: 1;
+                overflow: auto;
+                display: none;
+            }
+
+            #left-pane {
+                overflow-y: auto;
+                padding: 4px;
+                padding-top: 0;
+                padding-bottom: 0;
+                flex-shrink: 0;
+                border-right: 1px solid black;
+            }
+            #right-pane {
+                flex-grow: 1;
+                flex-direction: column;
+                min-width: 0;
+                overflow-y: auto;
+                padding: 4px;
+                display: flex;
+            }
+
+            #right-pane pre {
+                margin: 0;
+            }
+
+            #top-controls {
+                display: flex;
+            }
+
+            .entry-name {
+                /* background-color: pink; */
+                padding: 4px;
+                margin-bottom: 4px;
+                margin-top: 4px;
+                font-family: monospace;
+                cursor: pointer;
+            }
+            .entry-name:hover, .entry-name.active {
+                background-color: #d3f3f3;
+            }
+
+            button {
+                width: 72px;
+            }
+
+            code {
+                background-color: d3f3f3;
+            }
+
+            #right-pane pre.pre-head {
+                background-color: d3f3f3;
+                padding: 4px;
+                margin-bottom: 4px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="top-controls">
+            <button onclick='magic()'>Decode</button>
+            <textarea id="data" type="text">\x0a262f6c6f63616c63616368652f65787465726e616c2d6e6574776f726b732f636865636b73756d10e88f0120402a0c08ffe2ebc00610919dcf9103320c08ffe2ebc00610d99ecf9103</textarea>
+            <button onclick='clearAllTheThings()'>Clear</button>
+            <button onclick='paste()'>Paste</button>
+        </div>
+        <div id="message">
+        </div>
+        <div id="results">
+            <div id="left-pane"></div>
+            <div id="right-pane"></div>
+        </div>
+        <script>
+            const go = new Go();  // Go runtime
+            let wasmModule;  // Store the loaded WASM module
+            let defaultMessage = "Add hex encoded text to the box above and click 'Decode' to see possible results. <br/><br/> Note: All types will be listed that did not yield an error during decode. An attempt is made to sort results based on <i>guessed</i> accuracy";
+            showMessage(defaultMessage + "<br /><br />A sample <code>storage.Blob</code> is provided.")
+            
+
+            async function loadWebAssembly() {
+                const response = await fetch("main.wasm");
+                const bytes = await response.arrayBuffer();
+                const { instance } = await WebAssembly.instantiate(bytes, go.importObject);
+                go.run(instance);
+                wasmModule = instance;  // Store the instance globally
+            }
+
+            async function magic() {
+                let value = document.getElementById('data').value;
+                console.log("Data:",value)
+
+                let rawOutput;
+                try {
+                    rawOutput = await decode(value)
+                    // console.log("RawOutput:", rawOutput)
+                } catch(error) {
+                    showMessage("An error occured getting raw output: " + error)
+                    return
+                }
+
+                let output;
+                try {
+                    output = JSON.parse(rawOutput)
+                    // console.log("Output:", output)
+                } catch(error) {
+                    showMessage("An error occurred parsing raw output: " + error)
+                    return
+                }
+
+                if (output === null || output.length === 0) {
+                    return
+                }
+                showResults()
+
+                let resultsEle = document.getElementById('results')
+                let top = document.createElement("div")
+
+                let lpane = document.getElementById("left-pane")
+                let rpane = document.getElementById("right-pane")
+
+                let protoNameEles=[]
+                let protoJsonEles=[]
+                for (const entry of output) {
+                    let contentEle = createContentEle(entry)
+                    let nameEle = document.createElement("div")
+                    nameEle.textContent = entry.name
+                    nameEle.classList.add("entry-name")
+                    nameEle.addEventListener('click', function(){
+                        rpane.replaceChildren(contentEle)
+                        setActive(this)
+                    })
+
+                    protoNameEles.push(nameEle)
+                    protoJsonEles.push(head(entry), contentEle)
+                }
+                // resultsEle.replaceChildren(top)
+                lpane.replaceChildren(...protoNameEles)
+                rpane.replaceChildren(...protoJsonEles)
+            }
+
+            function showMessage(message) {
+                let e = document.getElementById("message")
+                e.style.display = "block";
+                e.innerHTML = message;
+
+                e = document.getElementById("results")
+                e.style.display = "none";
+
+
+            }
+
+            function showResults() {
+                let e = document.getElementById("message")
+                e.style.display = "none";
+
+                e = document.getElementById("results")
+                e.style.display = "flex";
+            }
+
+            function setActive(target) {
+                let eles = document.getElementsByClassName("entry-name")
+                for (const e of eles) {
+                    e.classList.remove("active")
+                }
+
+                target.classList.add("active")
+            }
+
+            function createContentEle(entry) {
+                let contentEle = document.createElement("pre")
+                contentEle.textContent = atob(entry.proto_json) + "\n\n"
+                contentEle.classList.add("out-area")
+
+                return contentEle
+            }
+
+            function head(entry) {
+                let e = document.createElement("pre")
+                e.classList.add("out-area", "pre-head")
+                e.textContent = entry.name
+                return e
+            }
+
+            function pretty(value) {
+                if (wasmModule) {
+                    let out = window.dothing(value);
+                    return out;
+                } else {
+                    showMessage("WASM module not loaded yet!");
+                }
+            }
+
+            async function decode(value) {
+                if (wasmModule) {
+                    let out = await window.decode(value);
+                    return out;
+                } else {
+                    showMessage("WASM module not loaded yet!");
+                }
+            }
+
+            function clearAllTheThings() {
+                document.getElementById('left-pane').innerHTML = "";
+                document.getElementById('right-pane').innerHTML = "";
+                document.getElementById('data').value = "";
+                showMessage(defaultMessage)
+            }
+
+            async function paste() {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    console.log("From clipboard: ", text)
+                    document.getElementById('data').value = text;
+                } catch (err) {
+                    showMessage("failed to read clipboard: " + err)
+                }
+
+                magic()
+            }
+
+            loadWebAssembly();
+        </script>
+    </body>
+</html>
