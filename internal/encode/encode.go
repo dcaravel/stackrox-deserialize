@@ -3,8 +3,10 @@ package encode
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"sort"
 	"strings"
+	"unsafe"
 
 	// generate/storage import will register all types in the protoregistry.GlobalTypes list
 	_ "github.com/stackrox/rox/generated/storage"
@@ -25,6 +27,8 @@ type thinger interface {
 type EncodeEntry struct {
 	Name      string `json:"name,omitempty"`
 	NumFields int    `json:"num_fields,omitempty"`
+	SizeOf    uint   `json:"size_of,omitempty"`
+	DataLen   int    `json:"data_len,omitempty"`
 	ProtoJSON []byte `json:"proto_json,omitempty"`
 	RawJSON   []byte `json:"raw_json,omitempty"`
 }
@@ -53,6 +57,7 @@ func JSONAll(dataB []byte) ([]*EncodeEntry, error) {
 		entry := &EncodeEntry{}
 		entry.Name = name
 		entry.NumFields = mt.Descriptor().Fields().Len()
+		entry.SizeOf = uint(unsafe.Sizeof(t))
 
 		b, err := protojson.MarshalOptions{Multiline: true}.Marshal(t)
 		if err == nil && len(bytes.TrimSpace(b)) > 0 {
@@ -64,6 +69,9 @@ func JSONAll(dataB []byte) ([]*EncodeEntry, error) {
 				entry.RawJSON = b
 			}
 
+			// hack
+			entry.DataLen = dataLen(entry.RawJSON)
+
 			results = append(results, entry)
 		}
 
@@ -74,18 +82,71 @@ func JSONAll(dataB []byte) ([]*EncodeEntry, error) {
 		l := results[i]
 		r := results[j]
 
-		if l.NumFields != r.NumFields {
-			return l.NumFields > r.NumFields
+		if len(l.RawJSON) != len(r.RawJSON) {
+			return len(l.RawJSON) > len(r.RawJSON)
 		}
 
 		if len(l.ProtoJSON) != len(r.ProtoJSON) {
 			return len(l.ProtoJSON) > len(r.ProtoJSON)
 		}
 
+		if l.DataLen != r.DataLen {
+			return l.DataLen > r.DataLen
+		}
+
+		if l.NumFields != r.NumFields {
+			return l.NumFields > r.NumFields
+		}
 		return l.Name < r.Name
 	})
 
 	return results, nil
+}
+
+func dataLen(b []byte) int {
+	d := map[string]interface{}{}
+	err := json.Unmarshal(b, &d)
+	if err != nil {
+		log.Print(err)
+		return -1
+	}
+
+	return dataLenR(d)
+}
+
+func dataLenR(d map[string]interface{}) int {
+	var sum int
+
+	queue := []interface{}{}
+	for _, v := range d {
+		queue = append(queue, v)
+	}
+
+	for len(queue) > 0 {
+		v := queue[0]
+		sum += dataLenField(v)
+		queue = queue[1:]
+	}
+
+	return sum
+}
+
+func dataLenField(v interface{}) int {
+	switch t := v.(type) {
+	case string:
+		return len(t)
+	case map[string]interface{}:
+		return dataLenR(t)
+	case []interface{}:
+		sum := 0
+		for _, e := range t {
+			sum += dataLenField(e)
+		}
+		return sum
+	default:
+		// fmt.Printf("huh: %v (%T)\n", v, t)
+		return int(unsafe.Sizeof(t))
+	}
 }
 
 // KnownTypes returns of globally registered proto types that
