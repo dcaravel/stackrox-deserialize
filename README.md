@@ -1,3 +1,10 @@
+# StackRox Deserialize
+A static site that can deserialized hex encoded StackRox proto messages to assist troubleshooting.
+
+https://dcaravel.github.io/stackrox-deserialize/
+
+The deserialization happens via a Go built `wasm` module.
+
 ## Build
 
 ```
