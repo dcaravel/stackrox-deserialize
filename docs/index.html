@@ -127,6 +127,21 @@
                     // ].join('\n'),
                     language: 'json',
                     theme: 'vs-dark',
+
+                    readOnly: true,
+                    folding: true,
+
+                    contextmenu: false,
+                    mouseWheelZoom: false,
+                    suggestOnTriggerCharacters: false,
+                    quickSuggestions: false,
+                    occurrencesHighlight: false,
+                    renderLineHighlight: 'none',
+
+                    scrollbar: {
+                        vertical: 'auto',
+                        horizontal: 'auto'
+                    }
                 });
             });
         </script>
@@ -198,6 +213,7 @@
                 lpane.replaceChildren(...protoNameEles)
                 editor.setValue(editorValue)
                 editor.layout()
+                editor.setScrollPosition({scrollTop: 0});
             }
 
             function showMessage(message) {
@@ -217,6 +233,7 @@
 
                 e = document.getElementById("results")
                 e.style.display = "flex";
+                editor.setScrollPosition({scrollTop: 0});
                 editor.layout()
             }
 
