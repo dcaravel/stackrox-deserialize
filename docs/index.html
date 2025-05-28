@@ -200,9 +200,9 @@
                         // rpane.replaceChildren(contentEle)
                         setActive(this)
 
-                        if (editor) {
-                            editor.setValue(atob(entry.proto_json))
-                        }
+                        editor.setValue(atob(entry.proto_json))
+                        editor.layout()
+                        editor.setScrollPosition({scrollTop: 0});
                     })
 
                     protoNameEles.push(nameEle)
