@@ -59,7 +59,7 @@ func JSONAll(dataB []byte) ([]*EncodeEntry, error) {
 		entry.NumFields = mt.Descriptor().Fields().Len()
 		entry.SizeOf = uint(unsafe.Sizeof(t))
 
-		b, err := protojson.MarshalOptions{Multiline: true}.Marshal(t)
+		b, err := protojson.MarshalOptions{Multiline: true, EmitUnpopulated: true, EmitDefaultValues: true}.Marshal(t)
 		if err == nil && len(bytes.TrimSpace(b)) > 0 {
 			entry.ProtoJSON = b
 

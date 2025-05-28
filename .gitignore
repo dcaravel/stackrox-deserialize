@@ -1,0 +1,38 @@
+# Binaries
+*.exe
+*.o
+
+# Test binary and results
+*.test
+*.out
+
+# Dependency directories (if using modules)
+/vendor
+
+# Go workspace file (if using modules)
+go.work
+
+# IDE files
+.idea/
+*.iml
+*.vscode/
+
+# OS files
+.DS_Store
+
+# Node.js
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Optional npm cache directory
+.npm/
+
+# Environment variables
+.env
+.env.*
+
+#VS Code
+.vscode/

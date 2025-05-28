@@ -23,3 +23,13 @@ go install .
 cd <this repo>
 daserve docs
 ```
+
+
+## Other
+
+Updating [monaco editor](https://www.npmjs.com/package/monaco-editor)
+```sh
+npm install monaco-editor
+...
+cp node_modules/monaco-editor/min docs/monaco-editor/min
+```

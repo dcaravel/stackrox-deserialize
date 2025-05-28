@@ -82,7 +82,15 @@
                 padding: 4px;
                 margin-bottom: 4px;
             }
+
+            #code-cont {
+                height: 100%;
+                width: 100%;
+                margin: 0;
+                overflow: hidden;
+            }
         </style>
+        <script src="monaco-editor/min/vs/loader.js"></script>
     </head>
     <body>
         <div id="top-controls">
@@ -95,8 +103,29 @@
         </div>
         <div id="results">
             <div id="left-pane"></div>
-            <div id="right-pane"></div>
+            <div id="code-cont"></div>
         </div>
+        <script>
+            let editor;
+
+            require.config({ paths: { 'vs': 'monaco-editor/min/vs' }});
+
+            require(['vs/editor/editor.main'], function () {
+                monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+                    validate: false,
+                    allowComments: true,
+                });
+                editor = monaco.editor.create(document.getElementById('code-cont'), {
+                    // value: [
+                    //     'function helloWorld() {',
+                    //     '\tconsole.log("Hello, world!");',
+                    //     '}'
+                    // ].join('\n'),
+                    language: 'json',
+                    theme: 'vs-dark',
+                });
+            });
+        </script>
         <script>
             const go = new Go();  // Go runtime
             let wasmModule;  // Store the loaded WASM module
@@ -114,7 +143,6 @@
 
             async function magic() {
                 let value = document.getElementById('data').value;
-                console.log("Data:",value)
 
                 let rawOutput;
                 try {
@@ -139,30 +167,33 @@
                 }
                 showResults()
 
-                let resultsEle = document.getElementById('results')
                 let top = document.createElement("div")
-
                 let lpane = document.getElementById("left-pane")
-                let rpane = document.getElementById("right-pane")
 
                 let protoNameEles=[]
                 let protoJsonEles=[]
+                let editorValue="";
                 for (const entry of output) {
-                    let contentEle = createContentEle(entry)
                     let nameEle = document.createElement("div")
                     nameEle.textContent = entry.name
                     nameEle.classList.add("entry-name")
                     nameEle.addEventListener('click', function(){
-                        rpane.replaceChildren(contentEle)
+                        // rpane.replaceChildren(contentEle)
                         setActive(this)
+
+                        if (editor) {
+                            editor.setValue(atob(entry.proto_json))
+                        }
                     })
 
                     protoNameEles.push(nameEle)
-                    protoJsonEles.push(head(entry), contentEle)
+
+                    editorValue += "// === " + entry.name + " ===\n"
+                    editorValue += atob(entry.proto_json) + "\n\n"
                 }
-                // resultsEle.replaceChildren(top)
                 lpane.replaceChildren(...protoNameEles)
-                rpane.replaceChildren(...protoJsonEles)
+                editor.setValue(editorValue)
+                editor.layout()
             }
 
             function showMessage(message) {
@@ -182,6 +213,7 @@
 
                 e = document.getElementById("results")
                 e.style.display = "flex";
+                editor.layout()
             }
 
             function setActive(target) {
@@ -191,21 +223,6 @@
                 }
 
                 target.classList.add("active")
-            }
-
-            function createContentEle(entry) {
-                let contentEle = document.createElement("pre")
-                contentEle.textContent = atob(entry.proto_json) + "\n\n"
-                contentEle.classList.add("out-area")
-
-                return contentEle
-            }
-
-            function head(entry) {
-                let e = document.createElement("pre")
-                e.classList.add("out-area", "pre-head")
-                e.textContent = entry.name
-                return e
             }
 
             function pretty(value) {
@@ -228,8 +245,8 @@
 
             function clearAllTheThings() {
                 document.getElementById('left-pane').innerHTML = "";
-                document.getElementById('right-pane').innerHTML = "";
                 document.getElementById('data').value = "";
+                editor.setValue('');
                 showMessage(defaultMessage)
             }
 
