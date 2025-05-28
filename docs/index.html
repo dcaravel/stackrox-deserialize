@@ -106,10 +106,14 @@
             <div id="code-cont"></div>
         </div>
         <script>
+            window.MonacoEnvironment = {
+                getWorkerUrl: function (moduleId, label) {
+                    return './monaco-editor/min/vs/base/worker/workerMain.js';
+                }
+            };
+            require.config({ paths: { 'vs': './monaco-editor/min/vs' }});
+
             let editor;
-
-            require.config({ paths: { 'vs': 'monaco-editor/min/vs' }});
-
             require(['vs/editor/editor.main'], function () {
                 monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
                     validate: false,
