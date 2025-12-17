@@ -5,11 +5,23 @@ https://dcaravel.github.io/stackrox-deserialize/
 
 The deserialization happens via a Go built `wasm` module.
 
+## Updating stackrox version
+
+```sh
+# expected to fail, but copy the version string from the failure
+go get github.com/stackrox/stackrox@latest
+
+# then tidy so that go.sum is also updated
+go mod tidy
+
+```
+
 ## Build
 
 ```
 GOOS=js GOARCH=wasm go build -o docs/main.wasm ./cmd/wasm
 ```
+This 'build' when pushed will cause GH pages to be updated
 
 ## Run
 Can use any web server, an example:

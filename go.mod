@@ -1,15 +1,15 @@
 module github.com/dcaravel/stackrox-deserialize
 
-go 1.23.4
+go 1.24.0
 
-toolchain go1.23.7
+toolchain go1.24.4
 
-replace github.com/stackrox/rox => github.com/stackrox/stackrox v0.0.0-20250328184422-41a2f7649e51
+replace github.com/stackrox/rox => github.com/stackrox/stackrox v0.0.0-20251217201924-2cdd4e783bfe
 
 require (
 	github.com/stackrox/rox v0.0.0-00010101000000-000000000000
-	github.com/stretchr/testify v1.10.0
-	google.golang.org/protobuf v1.36.5
+	github.com/stretchr/testify v1.11.1
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
