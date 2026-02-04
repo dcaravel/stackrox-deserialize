@@ -43,5 +43,5 @@ Updating [monaco editor](https://www.npmjs.com/package/monaco-editor)
 ```sh
 npm install monaco-editor
 ...
-cp node_modules/monaco-editor/min docs/monaco-editor/min
+cp -r node_modules/monaco-editor/min docs/monaco-editor/min
 ```

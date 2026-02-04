@@ -1,10 +1,8 @@
 module github.com/dcaravel/stackrox-deserialize
 
-go 1.24.0
+go 1.25.0
 
-toolchain go1.24.4
-
-replace github.com/stackrox/rox => github.com/stackrox/stackrox v0.0.0-20251217201924-2cdd4e783bfe
+replace github.com/stackrox/rox => github.com/stackrox/stackrox v0.0.0-20260204210318-9aeddf591777
 
 require (
 	github.com/stackrox/rox v0.0.0-00010101000000-000000000000
