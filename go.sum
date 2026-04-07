@@ -6,8 +6,8 @@ github.com/planetscale/vtprotobuf v0.6.1-0.20240409071808-615f978279ca h1:ujRGEV
 github.com/planetscale/vtprotobuf v0.6.1-0.20240409071808-615f978279ca/go.mod h1:t/avpk3KcrXxUnYOhZhMXJlSEyie6gQbtLq5NM3loB8=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRIccs7FGNTlIRMkT8wgtp5eCXdBlqhYGL6U=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/stackrox/stackrox v0.0.0-20260204210318-9aeddf591777 h1:MRcQhTdV96+hvgez6VA5df2w0Xa1PoJkDgKTH3bHOu4=
-github.com/stackrox/stackrox v0.0.0-20260204210318-9aeddf591777/go.mod h1:xJFdO5raS7AbeyD6zGsvZnzJkg5KL8RBrFnDr1EF8U0=
+github.com/stackrox/stackrox v0.0.0-20260407170126-27bf450c18af h1:EyW274+ClFPaYxgb0YmkkH03X2Kn1W6tVSQGUl02shQ=
+github.com/stackrox/stackrox v0.0.0-20260407170126-27bf450c18af/go.mod h1:BQvdZjWXKyCeVMLwwSYG4xe7+yvc9ZBQr1Gv0Nm6df4=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 google.golang.org/protobuf v1.36.11 h1:fV6ZwhNocDyBLK0dj+fg8ektcVegBBuEolpbTQyBNVE=
